@@ -683,9 +683,12 @@ export const getTools = async (): Promise<Tool[]> => {
     } else {
       console.log("No tools found in Firebase, populating with static tools.");
       const initialTools = STATIC_TOOLS.reduce((acc, tool) => {
-        const newTool: Omit<Tool, 'id'> & { id?: string } = { ...tool, isEnabled: true };
+        const newTool: Omit<Tool, 'id'> & { id?: string } = { ...tool };
+        const id = newTool.id;
         delete newTool.id;
-        acc[tool.id] = newTool;
+        if (id) {
+            acc[id] = newTool;
+        }
         return acc;
       }, {} as { [key: string]: Omit<Tool, 'id'> });
 
@@ -700,14 +703,13 @@ export const getTools = async (): Promise<Tool[]> => {
 
 
 
-export const saveTool = (tool: Omit<Tool, 'id'> & { id?: string }) => {
+export const saveTool = (tool: Tool) => {
     initializeAppOnce();
     if (!db) throw new Error("Firebase not configured.");
-    const id = tool.id || uuidv4();
+    const id = tool.id;
     const toolRef = ref(db, `tools/${id}`);
     
     const dataToSave = { ...tool };
-    delete dataToSave.id;
 
     return set(toolRef, dataToSave);
 };
@@ -770,14 +772,13 @@ export const getPaymentMethods = (callback: (methods: PaymentMethod[]) => void) 
     return unsubscribe;
 };
 
-export const savePaymentMethod = (method: Omit<PaymentMethod, 'id'> & { id?: string }) => {
+export const savePaymentMethod = (method: PaymentMethod) => {
     initializeAppOnce();
     if (!db) throw new Error("Firebase not configured.");
-    const id = method.id || uuidv4();
+    const id = method.id;
     const methodRef = ref(db, `payment_methods/${id}`);
     
     const dataToSave = { ...method };
-    delete dataToSave.id;
 
     return set(methodRef, dataToSave);
 };

@@ -71,7 +71,8 @@ export default function ToolsManagement({ initialTools, isLoading }: ToolsManage
 
     const handleSave = async () => {
         setIsSaving(true);
-        const result = await saveToolAction(currentTool);
+        const toolToSave = { ...currentTool, link: `/${currentTool.id}` };
+        const result = await saveToolAction(toolToSave);
         if (result.success) {
             toast({ title: 'Tool Saved!', description: `${currentTool.name} has been saved successfully.` });
             setIsSheetOpen(false);
@@ -172,7 +173,7 @@ export default function ToolsManagement({ initialTools, isLoading }: ToolsManage
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="tool-id">Tool ID / Link</Label>
-                                <Input id="tool-id" value={currentTool.id} disabled={tools.some(t => t.id === currentTool.id)} onChange={(e) => setCurrentTool({ ...currentTool, id: e.target.value.toLowerCase().replace(/\s+/g, '-'), link: `/${e.target.value.toLowerCase().replace(/\s+/g, '-')}` })} placeholder="e.g., case-converter" />
+                                <Input id="tool-id" value={currentTool.id} disabled={tools.some(t => t.id === currentTool.id)} onChange={(e) => setCurrentTool({ ...currentTool, id: e.target.value.toLowerCase().replace(/\s+/g, '-') })} placeholder="e.g., case-converter" />
                                 <p className="text-xs text-muted-foreground">This cannot be changed after creation. Must be unique and URL-friendly.</p>
                             </div>
                             <div className="space-y-2">
