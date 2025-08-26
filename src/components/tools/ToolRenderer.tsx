@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Tool } from '@/lib/types';
@@ -56,7 +57,6 @@ const ToolComponents: { [key: string]: React.ComponentType<any> } = {
   'pdf-splitter': dynamic(() => import('@/components/tools/PdfSplitter'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
   'image-to-pdf': dynamic(() => import('@/components/tools/ImageToPdf'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
   'speech-to-text': dynamic(() => import('@/components/tools/SpeechToText'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
-  'text-to-speech': dynamic(() => import('@/components/tools/TextToSpeech'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
   'github-to-jsdelivr-converter': dynamic(() => import('@/components/tools/GithubToJsdelivr'), { loading: () => <ToolLoadingSkeleton /> }),
   'thumbnail-generator': dynamic(() => import('@/components/tools/ThumbnailGenerator'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
   'color-palette-generator': dynamic(() => import('@/components/tools/ColorPaletteGenerator'), { loading: () => <ToolLoadingSkeleton /> }),

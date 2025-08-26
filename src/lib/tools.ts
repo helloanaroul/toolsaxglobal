@@ -354,17 +354,6 @@ export const ALL_TOOLS: Tool[] = [
     "authRequired": false
   },
   {
-    "id": "text-to-speech",
-    "name": "Text to Speech",
-    "description": "Convert text to life-like speech.",
-    "link": "/text-to-speech",
-    "category": "Utilities",
-    "icon": "Volume2",
-    "isEnabled": true,
-    "order": 33,
-    "authRequired": false
-  },
-  {
     "id": "github-to-jsdelivr-converter",
     "name": "GitHub to jsDelivr Converter",
     "description": "Convert GitHub file URLs to jsDelivr CDN links.",

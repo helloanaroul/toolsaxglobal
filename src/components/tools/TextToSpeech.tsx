@@ -1,167 +1,389 @@
+import { Tool } from './types';
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Play, Pause, Volume2, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-
-export default function TextToSpeech() {
-  const [text, setText] = useState('Hello world! This is a demonstration of the browser\'s built-in text-to-speech capabilities.');
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string | undefined>(undefined);
-  const [rate, setRate] = useState(1);
-  const [pitch, setPitch] = useState(1);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices();
-      if (availableVoices.length > 0) {
-        setVoices(availableVoices);
-        // Set a default English voice if available
-        const defaultVoice = availableVoices.find(voice => voice.lang.includes('en-US'));
-        setSelectedVoice(defaultVoice?.name);
-      }
-    };
-
-    // Voices are loaded asynchronously
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices(); // Initial load
-
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-      window.speechSynthesis.cancel();
-    };
-  }, []);
-  
-  const handleSpeak = () => {
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      return;
-    }
-
-    if (!text.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Input Required',
-        description: 'Please enter some text to speak.',
-      });
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voice = voices.find(v => v.name === selectedVoice);
-    if (voice) {
-      utterance.voice = voice;
-    }
-    utterance.rate = rate;
-    utterance.pitch = pitch;
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-    };
-    
-    utterance.onerror = (event) => {
-        toast({
-            variant: 'destructive',
-            title: 'An error occurred',
-            description: `Could not synthesize speech. ${event.error}`,
-        });
-        setIsSpeaking(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
-  };
-  
-  const handleClear = () => {
-      setText('');
-      if(isSpeaking) {
-        window.speechSynthesis.cancel();
-        setIsSpeaking(false);
-      }
+export const ALL_TOOLS: Tool[] = [
+  {
+    "id": "case-converter",
+    "name": "Case Converter",
+    "description": "Convert text to uppercase, lowercase, etc.",
+    "link": "/case-converter",
+    "category": "Utilities",
+    "icon": "CaseUpper",
+    "isEnabled": true,
+    "order": 0,
+    "authRequired": false
+  },
+  {
+    "id": "password-generator",
+    "name": "Password Generator",
+    "description": "Create secure, random passwords.",
+    "link": "/password-generator",
+    "category": "Security",
+    "icon": "Lock",
+    "isEnabled": true,
+    "order": 1,
+    "authRequired": false
+  },
+  {
+    "id": "qr-generator",
+    "name": "QR Code Generator",
+    "description": "Create custom QR codes for URLs or text.",
+    "link": "/qr-generator",
+    "category": "Utilities",
+    "icon": "QrCode",
+    "isEnabled": true,
+    "order": 2,
+    "authRequired": false
+  },
+  {
+    "id": "json-formatter",
+    "name": "JSON Formatter",
+    "description": "Format, validate, and beautify JSON data.",
+    "link": "/json-formatter",
+    "category": "Development",
+    "icon": "Braces",
+    "isEnabled": true,
+    "order": 3,
+    "authRequired": false
+  },
+  {
+    "id": "lorem-ipsum-generator",
+    "name": "Lorem Ipsum Generator",
+    "description": "Generate placeholder text for your designs.",
+    "link": "/lorem-ipsum-generator",
+    "category": "Content",
+    "icon": "FileText",
+    "isEnabled": true,
+    "order": 4,
+    "authRequired": false
+  },
+  {
+    "id": "color-converter",
+    "name": "Color Converter",
+    "description": "Convert between HEX, RGB, and HSL values.",
+    "link": "/color-converter",
+    "category": "Design",
+    "icon": "Palette",
+    "isEnabled": true,
+    "order": 5,
+    "authRequired": false
+  },
+  {
+    "id": "image-compressor",
+    "name": "Image Compressor",
+    "description": "Reduce file size of JPG & PNG images.",
+    "link": "/image-compressor",
+    "category": "Image",
+    "icon": "Minimize2",
+    "isEnabled": true,
+    "order": 6,
+    "authRequired": true
+  },
+  {
+    "id": "markdown-editor",
+    "name": "Markdown Editor",
+    "description": "Write and preview Markdown in real-time.",
+    "link": "/markdown-editor",
+    "category": "Content",
+    "icon": "FileSignature",
+    "isEnabled": true,
+    "order": 7,
+    "authRequired": false
+  },
+  {
+    "id": "unit-converter",
+    "name": "Unit Converter",
+    "description": "Convert length, weight, temperature, etc.",
+    "link": "/unit-converter",
+    "category": "Utilities",
+    "icon": "Ruler",
+    "isEnabled": true,
+    "order": 8,
+    "authRequired": false
+  },
+  {
+    "id": "word-counter",
+    "name": "Word Counter",
+    "description": "Count words, characters, and sentences.",
+    "link": "/word-counter",
+    "category": "Content",
+    "icon": "FileJson2",
+    "isEnabled": true,
+    "order": 9,
+    "authRequired": false
+  },
+  {
+    "id": "url-encoder-decoder",
+    "name": "URL Encoder & Decoder",
+    "description": "Encode or decode special characters in URLs.",
+    "link": "/url-encoder-decoder",
+    "category": "Development",
+    "icon": "Link",
+    "isEnabled": true,
+    "order": 10,
+    "authRequired": false
+  },
+  {
+    "id": "image-resizer",
+    "name": "Image Resizer",
+    "description": "Resize images to specific dimensions online.",
+    "link": "/image-resizer",
+    "category": "Image",
+    "icon": "Crop",
+    "isEnabled": true,
+    "order": 11,
+    "authRequired": true
+  },
+  {
+    "id": "base64-encoder",
+    "name": "Base64 Encoder & Decoder",
+    "description": "Encode or decode text to Base64 format.",
+    "link": "/base64-encoder",
+    "category": "Development",
+    "icon": "Binary",
+    "isEnabled": true,
+    "order": 12,
+    "authRequired": false
+  },
+  {
+    "id": "hash-generator",
+    "name": "Hash Generator",
+    "description": "Generate MD5, SHA-1, SHA-256 hashes.",
+    "link": "/hash-generator",
+    "category": "Security",
+    "icon": "Fingerprint",
+    "isEnabled": true,
+    "order": 13,
+    "authRequired": false
+  },
+  {
+    "id": "favicon-generator",
+    "name": "Favicon Generator",
+    "description": "Create a favicon from any image.",
+    "link": "/favicon-generator",
+    "category": "Image",
+    "icon": "Heart",
+    "isEnabled": true,
+    "order": 14,
+    "authRequired": true
+  },
+  {
+    "id": "html-minifier",
+    "name": "HTML Minifier",
+    "description": "Minify and compress HTML code.",
+    "link": "/html-minifier",
+    "category": "Development",
+    "icon": "FileCode",
+    "isEnabled": true,
+    "order": 15,
+    "authRequired": false
+  },
+  {
+    "id": "css-minifier",
+    "name": "CSS Minifier",
+    "description": "Minify and optimize CSS stylesheets.",
+    "link": "/css-minifier",
+    "category": "Development",
+    "icon": "FileCode2",
+    "isEnabled": true,
+    "order": 16,
+    "authRequired": false
+  },
+  {
+    "id": "javascript-minifier",
+    "name": "JavaScript Minifier",
+    "description": "Compress and minify JavaScript files.",
+    "link": "/javascript-minifier",
+    "category": "Development",
+    "icon": "FileCode2",
+    "isEnabled": true,
+    "order": 17,
+    "authRequired": false
+  },
+  {
+    "id": "meta-tag-generator",
+    "name": "Meta Tag Generator",
+    "description": "Create SEO-friendly meta tags for websites.",
+    "link": "/meta-tag-generator",
+    "category": "SEO",
+    "icon": "Code",
+    "isEnabled": true,
+    "order": 18,
+    "authRequired": false
+  },
+  {
+    "id": "open-graph-generator",
+    "name": "Open Graph Generator",
+    "description": "Generate Open Graph tags for social sharing.",
+    "link": "/open-graph-generator",
+    "category": "SEO",
+    "icon": "Share2",
+    "isEnabled": true,
+    "order": 19,
+    "authRequired": false
+  },
+  {
+    "id": "slug-generator",
+    "name": "Slug Generator",
+    "description": "Convert text into SEO-friendly slugs.",
+    "link": "/slug-generator",
+    "category": "SEO",
+    "icon": "Globe",
+    "isEnabled": true,
+    "order": 20,
+    "authRequired": false
+  },
+  {
+    "id": "emoji-picker",
+    "name": "Emoji Picker",
+    "description": "Search and copy emojis instantly.",
+    "link": "/emoji-picker",
+    "category": "Content",
+    "icon": "Smile",
+    "isEnabled": true,
+    "order": 21,
+    "authRequired": false
+  },
+  {
+    "id": "gradient-generator",
+    "name": "Gradient Generator",
+    "description": "Create custom CSS gradients.",
+    "link": "/gradient-generator",
+    "category": "Design",
+    "icon": "Paintbrush",
+    "isEnabled": true,
+    "order": 22,
+    "authRequired": false
+  },
+  {
+    "id": "box-shadow-generator",
+    "name": "Box Shadow Generator",
+    "description": "Generate CSS box shadows visually.",
+    "link": "/box-shadow-generator",
+    "category": "Design",
+    "icon": "BoxSelect",
+    "isEnabled": true,
+    "order": 23,
+    "authRequired": false
+  },
+  {
+    "id": "border-radius-generator",
+    "name": "Border Radius Generator",
+    "description": "Visualize and generate CSS border-radius.",
+    "link": "/border-radius-generator",
+    "category": "Design",
+    "icon": "Square",
+    "isEnabled": true,
+    "order": 24,
+    "authRequired": false
+  },
+  {
+    "id": "regex-tester",
+    "name": "Regex Tester",
+    "description": "Test and debug regular expressions.",
+    "link": "/regex-tester",
+    "category": "Development",
+    "icon": "Scan",
+    "isEnabled": true,
+    "order": 25,
+    "authRequired": false
+  },
+  {
+    "id": "html-entity-converter",
+    "name": "HTML Entity Converter",
+    "description": "Convert text to HTML entities and vice versa.",
+    "link": "/html-entity-converter",
+    "category": "Development",
+    "icon": "Code2",
+    "isEnabled": true,
+    "order": 26,
+    "authRequired": false
+  },
+  {
+    "id": "text-diff-checker",
+    "name": "Text Diff Checker",
+    "description": "Compare two texts and highlight differences.",
+    "link": "/text-diff-checker",
+    "category": "Content",
+    "icon": "GitCompareArrows",
+    "isEnabled": true,
+    "order": 28,
+    "authRequired": false
+  },
+  {
+    "id": "pdf-merger",
+    "name": "PDF Merger",
+    "description": "Merge multiple PDF files into one.",
+    "link": "/pdf-merger",
+    "category": "PDF",
+    "icon": "FilePlus",
+    "isEnabled": true,
+    "order": 29,
+    "authRequired": true
+  },
+  {
+    "id": "pdf-splitter",
+    "name": "PDF Splitter",
+    "description": "Split PDF files into separate pages.",
+    "link": "/pdf-splitter",
+    "category": "PDF",
+    "icon": "FileMinus",
+    "isEnabled": true,
+    "order": 30,
+    "authRequired": false
+  },
+  {
+    "id": "image-to-pdf",
+    "name": "Image to PDF",
+    "description": "Convert JPG, PNG, and other images to PDF.",
+    "link": "/image-to-pdf",
+    "category": "PDF",
+    "icon": "FileImage",
+    "isEnabled": true,
+    "order": 31,
+    "authRequired": false
+  },
+  {
+    "id": "speech-to-text",
+    "name": "Speech to Text",
+    "description": "Transcribe audio to text in real-time.",
+    "link": "/speech-to-text",
+    "category": "Utilities",
+    "icon": "Mic",
+    "isEnabled": true,
+    "order": 32,
+    "authRequired": false
+  },
+  {
+    "id": "github-to-jsdelivr-converter",
+    "name": "GitHub to jsDelivr Converter",
+    "description": "Convert GitHub file URLs to jsDelivr CDN links.",
+    "link": "/github-to-jsdelivr-converter",
+    "category": "Development",
+    "icon": "GitCompareArrows",
+    "isEnabled": true,
+    "order": 34,
+    "authRequired": false
+  },
+  {
+    "id": "thumbnail-generator",
+    "name": "Thumbnail Generator",
+    "description": "Generate thumbnails for blog posts.",
+    "link": "/thumbnail-generator",
+    "category": "Design",
+    "icon": "Image",
+    "isEnabled": true,
+    "order": 36,
+    "authRequired": false
+  },
+  {
+    "id": "color-palette-generator",
+    "name": "Color Palette Generator",
+    "description": "Generate color palettes from a single color.",
+    "link": "/color-palette-generator",
+    "category": "Design",
+    "icon": "Palette",
+    "isEnabled": true,
+    "order": 37,
+    "authRequired": false
   }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Text to Speech</CardTitle>
-        <CardDescription>
-          <div className="space-y-2">
-            <p>Convert your text into speech using your browser's built-in capabilities. Choose from a variety of voices and languages.</p>
-            <ol className="list-decimal list-inside space-y-1 pl-4">
-              <li><strong>Enter Text:</strong> Type or paste the text you want to hear.</li>
-              <li><strong>Configure Voice:</strong> Select a voice and adjust the rate and pitch using the sliders.</li>
-              <li><strong>Speak:</strong> Click the "Speak" button to start or stop the audio.</li>
-            </ol>
-          </div>
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-                <Label htmlFor="voice-select">Voice</Label>
-                <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-                    <SelectTrigger id="voice-select">
-                        <SelectValue placeholder="Select a voice" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {voices.map((voice) => (
-                            <SelectItem key={voice.name} value={voice.name}>
-                                {voice.name} ({voice.lang})
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-                <Label>Rate: {rate.toFixed(1)}</Label>
-                <Slider value={[rate]} onValueChange={(v) => setRate(v[0])} min={0.5} max={2} step={0.1} />
-            </div>
-            <div className="space-y-2">
-                <Label>Pitch: {pitch.toFixed(1)}</Label>
-                <Slider value={[pitch]} onValueChange={(v) => setPitch(v[0])} min={0} max={2} step={0.1} />
-            </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="text-input" className="flex justify-between items-center">
-              <span>Your Text</span>
-               <Button onClick={handleClear} variant="ghost" size="sm" disabled={!text}>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Clear
-               </Button>
-          </Label>
-          <Textarea
-            id="text-input"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type or paste your text here..."
-            className="min-h-[200px] text-base"
-          />
-        </div>
-        <div className="text-center">
-            <Button onClick={handleSpeak} disabled={!text.trim()} size="lg">
-                {isSpeaking ? (
-                    <>
-                        <Pause className="mr-2 h-5 w-5" /> Stop
-                    </>
-                ) : (
-                     <>
-                        <Play className="mr-2 h-5 w-5" /> Speak
-                    </>
-                )}
-            </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+];
