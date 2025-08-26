@@ -17,6 +17,7 @@ export default function HomePageClient({ tools }: HomePageClientProps) {
   const { searchQuery, selectedCategory } = useAppState();
   
   const filteredTools = useMemo(() => {
+    if (!tools) return [];
     return tools.filter(tool => {
         if (!tool.id || !tool.name) {
             return false;
@@ -32,6 +33,7 @@ export default function HomePageClient({ tools }: HomePageClientProps) {
 
   const originalIndexMap = useMemo(() => {
     const map = new Map<string, number>();
+    if (!tools) return map;
     tools.forEach((tool, index) => {
       if (tool.id) {
         map.set(tool.id, index);

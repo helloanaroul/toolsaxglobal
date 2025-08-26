@@ -9,12 +9,14 @@ import { Skeleton } from './ui/skeleton';
 
 const FirebaseStats = () => {
   const [stats, setStats] = useState<{ views: number; tool_clicks: number; users: number } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (isConfigured) {
       initializeUser();
       const unsubscribe = getStats(true, (newStats) => {
         setStats(newStats);
+        setLoading(false);
       });
       
       return () => {
@@ -22,10 +24,12 @@ const FirebaseStats = () => {
           unsubscribe();
         }
       }
+    } else {
+        setLoading(false);
     }
   }, []);
 
-  if (!isConfigured) {
+  if (!isConfigured && !loading) {
     return (
       <div className="text-center py-4 text-sm text-muted-foreground">
         Firebase is not configured. Live stats are disabled.
@@ -38,16 +42,19 @@ const FirebaseStats = () => {
       <StatCard
         title="Total Views"
         value={stats?.views}
+        isLoading={loading}
         icon={<Eye className="h-4 w-4 text-muted-foreground" />}
       />
       <StatCard
         title="Total Tool Clicks"
         value={stats?.tool_clicks}
+        isLoading={loading}
         icon={<MousePointerClick className="h-4 w-4 text-muted-foreground" />}
       />
       <StatCard
         title="Total Users"
         value={stats?.users}
+        isLoading={loading}
         icon={<Users className="h-4 w-4 text-muted-foreground" />}
       />
     </div>
@@ -57,10 +64,11 @@ const FirebaseStats = () => {
 interface StatCardProps {
   title: string;
   value: number | undefined;
+  isLoading: boolean;
   icon: React.ReactNode;
 }
 
-function StatCard({ title, value, icon }: StatCardProps) {
+function StatCard({ title, value, isLoading, icon }: StatCardProps) {
   return (
     <Card className="shadow-sm hover:shadow-md transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -68,10 +76,10 @@ function StatCard({ title, value, icon }: StatCardProps) {
         {icon}
       </CardHeader>
       <CardContent>
-        {value === undefined ? (
+        {isLoading ? (
           <Skeleton className="h-8 w-24" />
         ) : (
-          <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{(value || 0).toLocaleString()}</div>
         )}
       </CardContent>
     </Card>

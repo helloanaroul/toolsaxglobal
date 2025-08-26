@@ -669,7 +669,7 @@ export const getTools = async (): Promise<Tool[]> => {
   initializeAppOnce();
   if (!db) {
     console.log("Firebase not configured. Falling back to static tools.");
-    return STATIC_TOOLS.sort((a, b) => a.order - b.order);
+    return Promise.resolve(STATIC_TOOLS_FROM_FILE.sort((a, b) => a.order - b.order));
   }
 
   const toolsRef = ref(db, 'tools');
@@ -684,16 +684,16 @@ export const getTools = async (): Promise<Tool[]> => {
       console.log("No tools found in Firebase, populating with static tools.");
       
       const updates: { [key: string]: any } = {};
-      STATIC_TOOLS.forEach(tool => {
+      STATIC_TOOLS_FROM_FILE.forEach(tool => {
           updates[`/tools/${tool.id}`] = tool;
       });
 
       await update(ref(db), updates);
-      return STATIC_TOOLS.sort((a, b) => a.order - b.order);
+      return STATIC_TOOLS_FROM_FILE.sort((a, b) => a.order - b.order);
     }
   } catch (error) {
     console.error("Error fetching tools, falling back to static:", error);
-    return STATIC_TOOLS.sort((a, b) => a.order - b.order);
+    return STATIC_TOOLS_FROM_FILE.sort((a, b) => a.order - b.order);
   }
 };
 
