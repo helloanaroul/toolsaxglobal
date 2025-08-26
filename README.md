@@ -67,10 +67,3 @@ This is a critical step to connect your application to external services like Fi
 3.  When it's finished, you'll get a unique `.vercel.app` URL where your live application can be viewed.
 
 Congratulations, your Toolsax application is now live on Vercel!
-# toolsaxglobal
-# toolsaxglobal
-# toolsaxglobal
-# toolsaxglobal
-# toolsaxglobal
-# toolsaxglobal
-# toolsaxglobal
