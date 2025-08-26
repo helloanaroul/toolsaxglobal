@@ -21,11 +21,10 @@ export default function ReportBugPage() {
         if (!user) {
            router.push('/login?redirect=/report-a-bug');
         } else {
-            const unsubscribe = getTools((loadedTools) => {
+            getTools().then(loadedTools => {
                 setTools(loadedTools);
                 setLoading(false);
             });
-            return () => unsubscribe();
         }
     }, [user, router]);
 

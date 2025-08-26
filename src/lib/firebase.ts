@@ -72,11 +72,9 @@ export function initializeAppOnce() {
     }
 }
 
-// Call initialization on load
 initializeAppOnce();
 
 
-// --- Auth Functions ---
 const googleProvider = auth ? new GoogleAuthProvider() : undefined;
 const githubProvider = auth ? new GithubAuthProvider() : undefined;
 const facebookProvider = auth ? new FacebookAuthProvider() : undefined;
@@ -121,7 +119,6 @@ export const updateUserProfile = (user: User, profile: { displayName?: string, p
 };
 
 
-// --- User Management & Database Functions ---
 const getAnonymousUserId = (): string => {
   if (typeof window === 'undefined') return '';
   let userId = localStorage.getItem('toolsax_anonymous_user_id');
@@ -140,7 +137,7 @@ export const initializeUser = () => {
 
     runTransaction(userRef, (userData) => {
         if (userData === null) {
-            incrementCounter('stats/users'); // counts both anonymous and registered
+            incrementCounter('stats/users'); 
             return { createdAt: new Date().toISOString() };
         }
         return userData;
@@ -206,14 +203,12 @@ export const checkAndCreateUser = async (data: {
     let isNewUser = false;
 
     if (data.isSocial && data.uid) {
-        // Social sign-up flow for a user who needs to complete their profile
         const existingUser = auth.currentUser;
         if (!existingUser || existingUser.uid !== data.uid) {
             throw new Error("Mismatched user session. Please try signing in again.");
         }
         user = existingUser;
     } else if (data.password) {
-        // Email sign-up flow
         const userCredential = await signUpWithEmail(data.email, data.password);
         user = userCredential.user;
         isNewUser = true;
@@ -221,12 +216,10 @@ export const checkAndCreateUser = async (data: {
         throw new Error("Invalid sign-up data. Password or social provider info is missing.");
     }
 
-    // Update Firebase Auth profile
     await updateProfile(user, { displayName: data.name, photoURL: data.photoURL });
 
     const userRef = ref(db, `users/${user.uid}`);
     
-    // Construct the data to be saved to the database.
     const userData: any = {
         name: data.name,
         username: data.username.toLowerCase(),
@@ -236,21 +229,17 @@ export const checkAndCreateUser = async (data: {
         role: 'user',
     };
 
-    // Add optional fields if they exist
     if (data.phone) userData.phone = data.phone;
     if (data.dob) userData.dob = data.dob;
     if (data.country) userData.country = data.country;
 
-    // For new email users, set createdAt
     if (isNewUser) {
         userData.createdAt = serverTimestamp();
         await set(userRef, userData);
     } else {
-        // For social users completing their profile, update existing record
         await update(userRef, userData);
     }
 
-    // Save the username for easy lookup
     const usernameRef = ref(db, `usernames/${data.username.toLowerCase()}`);
     await set(usernameRef, user.uid);
 };
@@ -293,7 +282,7 @@ export const subscribeToAllUsers = (callback: (users: any[]) => void) => {
     initializeAppOnce();
     if (!db) {
         callback([]);
-        return () => {}; // Return an empty unsubscribe function
+        return () => {};
     }
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
@@ -309,7 +298,7 @@ export const subscribeToAllUsers = (callback: (users: any[]) => void) => {
         }
     });
 
-    return unsubscribe; // Return the unsubscribe function from onValue
+    return unsubscribe;
 };
 
 
@@ -317,7 +306,6 @@ export const updateUserData = (uid: string, data: Partial<UserData>) => {
     initializeAppOnce();
     if (!db) return;
     const userRef = ref(db, `users/${uid}`);
-    // Create a new object with only the fields to be updated, excluding undefined ones.
     const updates: { [key: string]: any } = {};
     Object.keys(data).forEach(key => {
         const dataKey = key as keyof UserData;
@@ -356,7 +344,6 @@ export const getUserThemeSettings = async (uid: string) => {
 };
 
 
-// --- General Database Functions ---
 const incrementCounter = (path: string) => {
   initializeAppOnce();
   if (!db) return;
@@ -483,7 +470,6 @@ export const updateGlobalNotifications = (notifications: Notification[]) => {
     return set(notificationRef, notifications);
 };
 
-// --- Dashboard Chart Data ---
 
 export const getMonthlyUserGrowth = async (): Promise<{ name: string; total: number }[]> => {
     initializeAppOnce();
@@ -493,7 +479,6 @@ export const getMonthlyUserGrowth = async (): Promise<{ name: string; total: num
     const monthlyData: { [key: string]: number } = {};
     const monthLabels: string[] = [];
 
-    // Initialize last 12 months
     for (let i = 11; i >= 0; i--) {
         const d = subMonths(now, i);
         const monthKey = format(d, 'yyyy-MM');
@@ -514,7 +499,6 @@ export const getMonthlyUserGrowth = async (): Promise<{ name: string; total: num
                 if (user.createdAt) {
                     try {
                         const date = new Date(user.createdAt);
-                         // Check if the date is valid
                         if (!isNaN(date.getTime())) {
                             const monthKey = format(date, 'yyyy-MM');
                             if (monthlyData.hasOwnProperty(monthKey)) {
@@ -522,7 +506,6 @@ export const getMonthlyUserGrowth = async (): Promise<{ name: string; total: num
                             }
                         }
                     } catch (e) {
-                        // Ignore invalid date formats
                     }
                 }
             });
@@ -531,7 +514,6 @@ export const getMonthlyUserGrowth = async (): Promise<{ name: string; total: num
         console.error("Error fetching user growth data: ", e);
     }
 
-    // Format for chart
     return monthLabels.map(label => {
         const monthKey = Object.keys(monthlyData).find(key => format(new Date(key), 'MMM') === label) || '';
         return { name: label, total: monthlyData[monthKey] || 0 };
@@ -558,11 +540,9 @@ export const getTopToolsByClicks = async (limit: number = 7): Promise<{ name: st
                 clicks: statsData[toolId].clicks || 0,
             }));
 
-            // Sort by clicks descending and take the limit
             const sortedTools = allToolsData.sort((a, b) => b.clicks - a.clicks);
             const topTools = sortedTools.slice(0, limit);
 
-            // Map to the final format with tool names
             return topTools.map(toolData => {
                 const toolInfo = allTools[toolData.id];
                 return {
@@ -577,8 +557,6 @@ export const getTopToolsByClicks = async (limit: number = 7): Promise<{ name: st
     return [];
 };
 
-
-// --- Comments System ---
 
 export const postComment = async (toolId: string, text: string, user: User) => {
     initializeAppOnce();
@@ -676,7 +654,6 @@ export const getComments = (toolId: string, callback: (comments: Comment[]) => v
                     replies: replies
                 };
             });
-            // Reverse to show newest comments first
             callback(commentsList.reverse());
         } else {
             callback([]);
@@ -684,15 +661,16 @@ export const getComments = (toolId: string, callback: (comments: Comment[]) => v
     });
 };
 
-// --- Tools Management ---
-export const getTools = async (): Promise<Tool[]> => {
+export const getTools = async (callback?: (tools: Tool[]) => void): Promise<Tool[]> => {
   initializeAppOnce();
   if (!db) {
     console.warn("Firebase not configured. Falling back to static tools.");
-    return Promise.resolve(STATIC_TOOLS);
+    const tools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
+    if (callback) callback(tools);
+    return Promise.resolve(tools);
   }
 
-  const toolsRef = query(ref(db, 'tools'), orderByChild('order'));
+  const toolsRef = ref(db, 'tools');
 
   try {
     const snapshot = await get(toolsRef);
@@ -702,9 +680,10 @@ export const getTools = async (): Promise<Tool[]> => {
         ...toolsData[key],
         id: key,
       })).sort((a, b) => a.order - b.order);
+
+      if (callback) callback(toolsList);
       return toolsList;
     } else {
-      // If no tools in DB, populate with static tools
       console.log("No tools found in Firebase, populating with static tools.");
       const initialTools = STATIC_TOOLS.reduce((acc, tool, index) => {
         const newTool: Omit<Tool, 'id'> & { id?: string } = { ...tool, isEnabled: true, order: index };
@@ -714,12 +693,15 @@ export const getTools = async (): Promise<Tool[]> => {
       }, {} as { [key: string]: Omit<Tool, 'id'> });
 
       await set(ref(db, 'tools'), initialTools);
-      // Return static tools after populating
-      return STATIC_TOOLS;
+      const sortedStaticTools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
+      if (callback) callback(sortedStaticTools);
+      return sortedStaticTools;
     }
   } catch (error) {
     console.error("Error fetching tools:", error);
-    return STATIC_TOOLS; // Fallback to static tools on error
+    const sortedStaticTools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
+    if (callback) callback(sortedStaticTools);
+    return sortedStaticTools;
   }
 };
 
@@ -730,7 +712,6 @@ export const saveTool = (tool: Omit<Tool, 'id'> & { id?: string }) => {
     const id = tool.id || uuidv4();
     const toolRef = ref(db, `tools/${id}`);
     
-    // Ensure data is clean before saving
     const dataToSave = { ...tool };
     delete dataToSave.id;
 
@@ -755,8 +736,6 @@ export const updateToolsOrder = (tools: Tool[]) => {
     return update(ref(db), updates);
 };
 
-
-// --- Payment Methods Management ---
 
 const STATIC_PAYMENT_METHODS: PaymentMethod[] = [
     { id: 'bkash', name: 'bKash', icon: 'https://paylogo.pages.dev/bkash.png', accountNumber: '01964638683', isLink: false, order: 0 },
@@ -785,7 +764,6 @@ export const getPaymentMethods = (callback: (methods: PaymentMethod[]) => void) 
             })).sort((a, b) => a.order - b.order);
             callback(methodsList);
         } else {
-            // Populate with static methods if DB is empty
             const initialMethods = STATIC_PAYMENT_METHODS.reduce((acc, method) => {
                  const newMethod: Omit<PaymentMethod, 'id'> & { id?: string } = { ...method };
                  delete newMethod.id;
@@ -819,7 +797,6 @@ export const deletePaymentMethod = (methodId: string) => {
 };
 
 
-// --- VIP System ---
 export const submitVipRequest = async (requestData: Omit<VipRequest, 'status' | 'timestamp'>) => {
     initializeAppOnce();
     if (!db) throw new Error("Firebase not configured.");
@@ -892,7 +869,6 @@ export const rejectVipRequest = async (uid: string) => {
 };
 
 
-// --- File Upload ---
 export async function uploadFile(file: File, path: string): Promise<string> {
     initializeAppOnce();
     if (!app) throw new Error("Firebase not configured.");
