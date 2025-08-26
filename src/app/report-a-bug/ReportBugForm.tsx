@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Tool, UserData } from '@/lib/types';
-import { submitBugReportAction } from '@/app/admin/dashboard/actions';
+import { submitBugReportAction } from '@/app/report-a-bug/actions';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -59,7 +59,7 @@ export default function ReportBugForm({ tools }: { tools: Tool[] }) {
         description: "Thank you for your feedback. We'll look into it shortly.",
       });
       form.reset();
-      // Reset to default tool if it was present
+      
       form.setValue('tool', defaultTool);
 
     } else {
