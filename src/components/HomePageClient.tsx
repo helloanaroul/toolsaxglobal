@@ -18,13 +18,14 @@ export default function HomePageClient({ tools }: HomePageClientProps) {
   
   const filteredTools = useMemo(() => {
     return tools.filter(tool => {
-        if (!tool.id || !tool.name || !tool.description) {
+        if (!tool.id || !tool.name) {
             return false;
         }
         const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+        const searchInput = searchQuery.toLowerCase();
         const matchesSearch =
-            tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            tool.description.toLowerCase().includes(searchQuery.toLowerCase());
+            tool.name.toLowerCase().includes(searchInput) ||
+            (tool.description && tool.description.toLowerCase().includes(searchInput));
         return matchesCategory && matchesSearch;
     });
   }, [tools, searchQuery, selectedCategory]);
