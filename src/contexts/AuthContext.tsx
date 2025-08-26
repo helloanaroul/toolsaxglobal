@@ -30,12 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
     }
     
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if(user) {
-        const data = await getUserData(user.uid);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
+      if (firebaseUser) {
+        const data = await getUserData(firebaseUser.uid);
+        setUser(firebaseUser);
         setUserData(data);
       } else {
+        setUser(null);
         setUserData(null);
       }
       setLoading(false);
