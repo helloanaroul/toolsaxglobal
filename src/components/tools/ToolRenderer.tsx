@@ -1,0 +1,85 @@
+
+'use client';
+
+import type { Tool } from '@/lib/types';
+import dynamic from 'next/dynamic';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+
+const ToolLoadingSkeleton = () => (
+  <Card>
+    <CardHeader>
+      <Skeleton className="h-8 w-1/2" />
+      <Skeleton className="h-4 w-3/4 mt-2" />
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <Skeleton className="h-40 w-full" />
+      <div className="flex justify-center">
+        <Skeleton className="h-10 w-28" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
+
+const ToolComponents: { [key: string]: React.ComponentType<any> } = {
+  'case-converter': dynamic(() => import('@/components/tools/CaseConverter'), { loading: () => <ToolLoadingSkeleton /> }),
+  'password-generator': dynamic(() => import('@/components/tools/PasswordGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'qr-generator': dynamic(() => import('@/components/tools/QrCodeGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'json-formatter': dynamic(() => import('@/components/tools/JsonFormatter'), { loading: () => <ToolLoadingSkeleton /> }),
+  'pdf-merger': dynamic(() => import('@/components/tools/PdfMerger'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'lorem-ipsum-generator': dynamic(() => import('@/components/tools/LoremIpsumGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'unit-converter': dynamic(() => import('@/components/tools/UnitConverter'), { loading: () => <ToolLoadingSkeleton /> }),
+  'color-converter': dynamic(() => import('@/components/tools/ColorConverter'), { loading: () => <ToolLoadingSkeleton /> }),
+  'image-compressor': dynamic(() => import('@/components/tools/ImageCompressor'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'markdown-editor': dynamic(() => import('@/components/tools/MarkdownEditor'), { loading: () => <ToolLoadingSkeleton /> }),
+  'word-counter': dynamic(() => import('@/components/tools/WordCounter'), { loading: () => <ToolLoadingSkeleton /> }),
+  'url-encoder-decoder': dynamic(() => import('@/components/tools/UrlEncoderDecoder'), { loading: () => <ToolLoadingSkeleton /> }),
+  'image-resizer': dynamic(() => import('@/components/tools/ImageResizer'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'base64-encoder': dynamic(() => import('@/components/tools/Base64Encoder'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'hash-generator': dynamic(() => import('@/components/tools/HashGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'favicon-generator': dynamic(() => import('@/components/tools/FaviconGenerator'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'html-minifier': dynamic(() => import('@/components/tools/HtmlMinifier'), { loading: () => <ToolLoadingSkeleton /> }),
+  'css-minifier': dynamic(() => import('@/components/tools/CssMinifier'), { loading: () => <ToolLoadingSkeleton /> }),
+  'javascript-minifier': dynamic(() => import('@/components/tools/JavaScriptMinifier'), { loading: () => <ToolLoadingSkeleton /> }),
+  'meta-tag-generator': dynamic(() => import('@/components/tools/MetaTagGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'open-graph-generator': dynamic(() => import('@/components/tools/OpenGraphGenerator'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'slug-generator': dynamic(() => import('@/components/tools/SlugGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'emoji-picker': dynamic(() => import('@/components/tools/EmojiPicker'), { loading: () => <ToolLoadingSkeleton /> }),
+  'gradient-generator': dynamic(() => import('@/components/tools/GradientGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'box-shadow-generator': dynamic(() => import('@/components/tools/BoxShadowGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'border-radius-generator': dynamic(() => import('@/components/tools/BorderRadiusGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+  'regex-tester': dynamic(() => import('@/components/tools/RegexTester'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'html-entity-converter': dynamic(() => import('@/components/tools/HtmlEntityConverter'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'text-diff-checker': dynamic(() => import('@/components/tools/TextDiffChecker'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'pdf-splitter': dynamic(() => import('@/components/tools/PdfSplitter'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'image-to-pdf': dynamic(() => import('@/components/tools/ImageToPdf'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'speech-to-text': dynamic(() => import('@/components/tools/SpeechToText'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'text-to-speech': dynamic(() => import('@/components/tools/TextToSpeech'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'github-to-jsdelivr-converter': dynamic(() => import('@/components/tools/GithubToJsdelivr'), { loading: () => <ToolLoadingSkeleton /> }),
+  'thumbnail-generator': dynamic(() => import('@/components/tools/ThumbnailGenerator'), { ssr: false, loading: () => <ToolLoadingSkeleton /> }),
+  'color-palette-generator': dynamic(() => import('@/components/tools/ColorPaletteGenerator'), { loading: () => <ToolLoadingSkeleton /> }),
+};
+
+
+const PlaceholderTool = ({ tool }: { tool: Tool }) => (
+    <Card className="mt-8">
+        <CardHeader>
+            <CardTitle>Tool Not Implemented</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p>The tool <span className="font-semibold">{tool.name}</span> is not yet implemented.</p>
+            <p className="mt-4">Check back soon!</p>
+        </CardContent>
+    </Card>
+);
+
+interface ToolRendererProps {
+  tool: Tool;
+}
+
+export default function ToolRenderer({ tool }: ToolRendererProps) {
+  const ToolComponent = ToolComponents[tool.id] || (() => <PlaceholderTool tool={tool} />);
+  return <ToolComponent />;
+}
