@@ -25,25 +25,41 @@ const ToolCard = ({ tool, index }: ToolCardProps) => {
   const iconColor = getColorByIndex(index);
 
   useEffect(() => {
-    if (isConfigured) {
-      const unsubscribeStats = getToolStats(tool.id, (stats) => {
-        setClicks(stats.clicks);
-      });
-      
-      return () => {
-        if (typeof unsubscribeStats === 'function') {
-          unsubscribeStats();
+    let isMounted = true;
+    
+    async function fetchStats() {
+        if (!isConfigured || !tool.id) {
+            if (isMounted) setClicks(0);
+            return;
         }
-      };
-    } else {
-      setClicks(0);
+        try {
+            const stats = await getToolStats(tool.id, false);
+            if (isMounted) {
+                setClicks(stats.clicks);
+            }
+        } catch (error) {
+            console.error(`Failed to fetch stats for ${tool.id}`, error);
+            if (isMounted) {
+                setClicks(0);
+            }
+        }
     }
+
+    fetchStats();
+
+    return () => {
+        isMounted = false;
+    };
   }, [tool.id]);
   
-  const isVip = userData?.role === 'vip' || userData?.role === 'admin';
+  const isVip = userData ? userData.role === 'vip' || userData.role === 'admin' : false;
 
-  const handleCardClick = async (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (!tool || !tool.id) {
+        console.error("Tool ID is missing, cannot navigate.");
+        return;
+    }
 
     if (tool.authRequired && !user) {
         router.push('/login');

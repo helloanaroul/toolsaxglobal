@@ -18,8 +18,8 @@ export default function HomePageClient({ tools }: HomePageClientProps) {
   
   const filteredTools = useMemo(() => {
     return tools.filter(tool => {
-        if (!tool.name || !tool.description) {
-            return false; // Skip tools with missing name or description
+        if (!tool.id || !tool.name || !tool.description) {
+            return false;
         }
         const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
         const matchesSearch =
@@ -32,7 +32,9 @@ export default function HomePageClient({ tools }: HomePageClientProps) {
   const originalIndexMap = useMemo(() => {
     const map = new Map<string, number>();
     tools.forEach((tool, index) => {
-      map.set(tool.id, index);
+      if (tool.id) {
+        map.set(tool.id, index);
+      }
     });
     return map;
   }, [tools]);
