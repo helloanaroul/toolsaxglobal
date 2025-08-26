@@ -14,12 +14,14 @@ import { getUserFavorites, getTools } from '@/lib/firebase';
 import { Skeleton } from './ui/skeleton';
 
 export default function FavoriteTools() {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
     const [allTools, setAllTools] = useState<Tool[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        if (loading) return; 
+
         const unsubscribeTools = getTools((loadedTools) => {
             setAllTools(loadedTools);
             setIsLoading(false);
@@ -41,7 +43,6 @@ export default function FavoriteTools() {
             handleStorageChange();
         }
 
-
         window.addEventListener('storage', handleStorageChange);
         window.addEventListener('favoritesChanged', handleStorageChange);
 
@@ -51,7 +52,7 @@ export default function FavoriteTools() {
             window.removeEventListener('storage', handleStorageChange);
             window.removeEventListener('favoritesChanged', handleStorageChange);
         };
-    }, [user]);
+    }, [user, loading]);
 
     const favoriteTools = allTools
       .filter(tool => favoriteIds.includes(tool.id) && tool.isEnabled)
@@ -62,7 +63,7 @@ export default function FavoriteTools() {
         originalIndexMap.set(tool.id, index);
     });
 
-    if (isLoading) {
+    if (loading) {
         return (
             <Button variant="ghost" size="icon" aria-label="Favorite Tools" disabled>
                 <Heart className="w-5 h-5" />
@@ -91,7 +92,9 @@ export default function FavoriteTools() {
                         </p>
                     </div>
                     <div className="grid gap-2">
-                        {favoriteTools.length > 0 ? (
+                        {isLoading ? (
+                            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)
+                        ) : favoriteTools.length > 0 ? (
                             favoriteTools.map(tool => {
                                 const index = originalIndexMap.get(tool.id) ?? 0;
                                 const iconColor = getColorByIndex(index);
