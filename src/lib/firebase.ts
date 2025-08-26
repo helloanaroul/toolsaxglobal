@@ -665,7 +665,7 @@ export const getTools = async (): Promise<Tool[]> => {
   initializeAppOnce();
   if (!db) {
     console.log("Firebase not configured. Falling back to static tools.");
-    return Promise.resolve(ALL_TOOLS.sort((a, b) => a.order - b.order));
+    return ALL_TOOLS.sort((a, b) => a.order - b.order);
   }
 
   const toolsRef = ref(db, 'tools');
@@ -678,12 +678,10 @@ export const getTools = async (): Promise<Tool[]> => {
       return toolsList.sort((a, b) => a.order - b.order);
     } else {
       console.log("No tools found in Firebase, populating with static tools.");
-      
       const updates: { [key: string]: any } = {};
       ALL_TOOLS.forEach(tool => {
-          updates[`/tools/${tool.id}`] = tool;
+        updates[`/tools/${tool.id}`] = tool;
       });
-
       await update(ref(db), updates);
       return ALL_TOOLS.sort((a, b) => a.order - b.order);
     }

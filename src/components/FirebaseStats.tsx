@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getStats, isConfigured, initializeUser } from '@/lib/firebase';
+import { getStats, isConfigured } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, MousePointerClick, Users } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
@@ -12,20 +12,20 @@ const FirebaseStats = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isConfigured) {
-      initializeUser();
-      const unsubscribe = getStats(true, (newStats) => {
-        setStats(newStats);
-        setLoading(false);
-      });
-      
-      return () => {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe();
-        }
+    if (!isConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = getStats(true, (newStats) => {
+      setStats(newStats);
+      setLoading(false);
+    });
+    
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
       }
-    } else {
-        setLoading(false);
     }
   }, []);
 

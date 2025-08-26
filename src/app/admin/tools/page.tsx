@@ -12,6 +12,7 @@ export default function AdminToolsPage() {
 
     useEffect(() => {
         const fetchTools = async () => {
+            setLoading(true);
             const loadedTools = await getTools();
             setTools(loadedTools);
             setLoading(false);

@@ -9,7 +9,7 @@ export interface Tool {
   authRequired?: boolean;
   isEnabled: boolean;
   order: number;
-  isPremium?: boolean; // New field for VIP tools
+  isPremium?: boolean;
 }
 
 export interface UserData {

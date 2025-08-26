@@ -17,16 +17,18 @@ export default function HomePageClient({ tools }: HomePageClientProps) {
   const { searchQuery, selectedCategory } = useAppState();
   
   const filteredTools = useMemo(() => {
-    if (!tools) return [];
+    if (!tools || tools.length === 0) return [];
+    
     return tools.filter(tool => {
-        if (!tool.id || !tool.name) {
-            return false;
-        }
+        if (!tool.id || !tool.name) return false;
+        
         const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+        
         const searchInput = searchQuery.toLowerCase();
         const matchesSearch =
             tool.name.toLowerCase().includes(searchInput) ||
             (tool.description && tool.description.toLowerCase().includes(searchInput));
+            
         return matchesCategory && matchesSearch;
     });
   }, [tools, searchQuery, selectedCategory]);
