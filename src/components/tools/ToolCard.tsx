@@ -25,16 +25,34 @@ const ToolCard = ({ tool, index }: ToolCardProps) => {
   const iconColor = getColorByIndex(index);
 
   useEffect(() => {
-    if (isConfigured) {
-      getToolStats(tool.id, false).then(stats => {
-          setClicks(stats.clicks);
-      });
-    } else {
-      setClicks(0);
+    let isMounted = true;
+    
+    async function fetchStats() {
+        if (!isConfigured) {
+            if (isMounted) setClicks(0);
+            return;
+        }
+        try {
+            const stats = await getToolStats(tool.id, false);
+            if (isMounted) {
+                setClicks(stats.clicks);
+            }
+        } catch (error) {
+            console.error(`Failed to fetch stats for ${tool.id}`, error);
+            if (isMounted) {
+                setClicks(0);
+            }
+        }
     }
+
+    fetchStats();
+
+    return () => {
+        isMounted = false;
+    };
   }, [tool.id]);
   
-  const isVip = userData?.role === 'vip' || userData?.role === 'admin';
+  const isVip = userData ? userData.role === 'vip' || userData.role === 'admin' : false;
 
   const handleCardClick = async (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -97,3 +115,4 @@ const ToolCard = ({ tool, index }: ToolCardProps) => {
 };
 
 export default ToolCard;
+
