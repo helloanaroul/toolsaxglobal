@@ -6,8 +6,7 @@ import Header from '@/components/Header';
 import SectionDivider from '@/components/SectionDivider';
 
 export default async function Home() {
-    // Fetch tools on the server
-    const allTools = await getTools();
+    const allTools: Tool[] = await getTools();
     const enabledTools = allTools.filter(tool => tool.isEnabled);
 
     return (

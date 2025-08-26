@@ -11,10 +11,12 @@ export default function AdminToolsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getTools().then(loadedTools => {
+        const fetchTools = async () => {
+            const loadedTools = await getTools();
             setTools(loadedTools);
             setLoading(false);
-        });
+        };
+        fetchTools();
     }, []);
 
     return (
