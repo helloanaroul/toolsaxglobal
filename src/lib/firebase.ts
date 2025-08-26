@@ -414,22 +414,27 @@ export const getStats = (subscribe: boolean = true, callback?: (stats: { views: 
   }
 };
 
-
-export const getToolStats = (toolId: string, callback: (stats: { clicks: number }) => void) => {
+export const getToolStats = async (toolId: string, subscribe: boolean = true, callback?: (stats: { clicks: number }) => void) => {
   initializeAppOnce();
   if (!db) {
-    callback({ clicks: 0 });
-    return () => {};
+    if (callback) callback({ clicks: 0 });
+    return subscribe ? () => {} : { clicks: 0 };
   }
 
   const toolStatsRef = ref(db, `tool_stats/${toolId}`);
-  const unsubscribe = onValue(toolStatsRef, (snapshot) => {
-    const data = snapshot.val() || { clicks: 0 };
-    callback(data);
-  });
-
-  return unsubscribe;
+  
+  if (subscribe && callback) {
+      const unsubscribe = onValue(toolStatsRef, (snapshot) => {
+        const data = snapshot.val() || { clicks: 0 };
+        callback(data);
+      });
+      return unsubscribe;
+  } else {
+      const snapshot = await get(toolStatsRef);
+      return snapshot.val() || { clicks: 0 };
+  }
 };
+
 
 export const getNotificationMessage = (subscribe: boolean = true, callback?: (messages: Notification[]) => void) => {
   initializeAppOnce();
@@ -664,8 +669,7 @@ export const getComments = (toolId: string, callback: (comments: Comment[]) => v
 export const getTools = async (callback?: (tools: Tool[]) => void): Promise<Tool[]> => {
   initializeAppOnce();
   if (!db) {
-    console.warn("Firebase not configured. Falling back to static tools.");
-    const tools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
+    const tools = STATIC_TOOLS;
     if (callback) callback(tools);
     return Promise.resolve(tools);
   }
@@ -684,7 +688,6 @@ export const getTools = async (callback?: (tools: Tool[]) => void): Promise<Tool
       if (callback) callback(toolsList);
       return toolsList;
     } else {
-      console.log("No tools found in Firebase, populating with static tools.");
       const initialTools = STATIC_TOOLS.reduce((acc, tool, index) => {
         const newTool: Omit<Tool, 'id'> & { id?: string } = { ...tool, isEnabled: true, order: index };
         delete newTool.id;
@@ -698,7 +701,6 @@ export const getTools = async (callback?: (tools: Tool[]) => void): Promise<Tool
       return sortedStaticTools;
     }
   } catch (error) {
-    console.error("Error fetching tools:", error);
     const sortedStaticTools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
     if (callback) callback(sortedStaticTools);
     return sortedStaticTools;
@@ -749,7 +751,6 @@ const STATIC_PAYMENT_METHODS: PaymentMethod[] = [
 export const getPaymentMethods = (callback: (methods: PaymentMethod[]) => void) => {
     initializeAppOnce();
     if (!db) {
-        console.warn("Firebase not configured. Falling back to static payment methods.");
         callback(STATIC_PAYMENT_METHODS);
         return () => {};
     }

@@ -4,11 +4,11 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { Tool } from '@/lib/types';
-import Icon from './Icon';
-import { Card, CardContent } from './ui/card';
+import Icon from '../Icon';
+import { Card, CardContent } from '../ui/card';
 import { incrementClicks, getToolStats, isConfigured } from '@/lib/firebase';
 import { Lock, Crown, MousePointerClick } from 'lucide-react';
-import { Skeleton } from './ui/skeleton';
+import { Skeleton } from '../ui/skeleton';
 import { getColorByIndex } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -26,15 +26,9 @@ const ToolCard = ({ tool, index }: ToolCardProps) => {
 
   useEffect(() => {
     if (isConfigured) {
-      const unsubscribeStats = getToolStats(tool.id, (stats) => {
-        setClicks(stats.clicks);
+      getToolStats(tool.id, false).then(stats => {
+          setClicks(stats.clicks);
       });
-      
-      return () => {
-        if (typeof unsubscribeStats === 'function') {
-          unsubscribeStats();
-        }
-      };
     } else {
       setClicks(0);
     }
