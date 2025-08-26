@@ -154,9 +154,8 @@ export const isUsernameAvailable = async (username: string): Promise<boolean> =>
 
 export const getUidByUsername = async (username: string): Promise<string | null> => {
     initializeAppOnce();
-    if (!db) return null;
-    const usernameRef = ref(db, `usernames/${username.toLowerCase()}`);
-    const snapshot = await get(usernameRef);
+    const uidRef = ref(db, `usernames/${username.toLowerCase()}`);
+    const snapshot = await get(uidRef);
     return snapshot.val() || null;
 };
 
@@ -666,12 +665,11 @@ export const getComments = (toolId: string, callback: (comments: Comment[]) => v
     });
 };
 
-export const getTools = async (callback?: (tools: Tool[]) => void): Promise<Tool[]> => {
+export const getTools = async (): Promise<Tool[]> => {
   initializeAppOnce();
   if (!db) {
-    const tools = STATIC_TOOLS;
-    if (callback) callback(tools);
-    return Promise.resolve(tools);
+    console.log("Firebase not configured. Falling back to static tools.");
+    return STATIC_TOOLS;
   }
 
   const toolsRef = ref(db, 'tools');
@@ -680,32 +678,26 @@ export const getTools = async (callback?: (tools: Tool[]) => void): Promise<Tool
     const snapshot = await get(toolsRef);
     if (snapshot.exists()) {
       const toolsData = snapshot.val();
-      const toolsList: Tool[] = Object.keys(toolsData).map(key => ({
-        ...toolsData[key],
-        id: key,
-      })).sort((a, b) => a.order - b.order);
-
-      if (callback) callback(toolsList);
-      return toolsList;
+      const toolsList: Tool[] = Object.values(toolsData);
+      return toolsList.sort((a, b) => a.order - b.order);
     } else {
-      const initialTools = STATIC_TOOLS.reduce((acc, tool, index) => {
-        const newTool: Omit<Tool, 'id'> & { id?: string } = { ...tool, isEnabled: true, order: index };
+      console.log("No tools found in Firebase, populating with static tools.");
+      const initialTools = STATIC_TOOLS.reduce((acc, tool) => {
+        const newTool: Omit<Tool, 'id'> & { id?: string } = { ...tool, isEnabled: true };
         delete newTool.id;
         acc[tool.id] = newTool;
         return acc;
       }, {} as { [key: string]: Omit<Tool, 'id'> });
 
       await set(ref(db, 'tools'), initialTools);
-      const sortedStaticTools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
-      if (callback) callback(sortedStaticTools);
-      return sortedStaticTools;
+      return STATIC_TOOLS.sort((a, b) => a.order - b.order);
     }
   } catch (error) {
-    const sortedStaticTools = STATIC_TOOLS.sort((a, b) => a.order - b.order);
-    if (callback) callback(sortedStaticTools);
-    return sortedStaticTools;
+    console.error("Error fetching tools, falling back to static:", error);
+    return STATIC_TOOLS.sort((a, b) => a.order - b.order);
   }
 };
+
 
 
 export const saveTool = (tool: Omit<Tool, 'id'> & { id?: string }) => {
