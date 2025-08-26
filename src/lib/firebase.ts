@@ -18,12 +18,8 @@ import {
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid';
 import type { Comment, Reply, Tool, VipRequest, PaymentMethod, UserData, BugReport } from "@/app/admin/types";
-import { ALL_TOOLS as STATIC_TOOLS_FROM_FILE } from "./tools";
+import { ALL_TOOLS } from "./tools";
 import { subMonths, format, startOfMonth } from 'date-fns';
-
-const STATIC_TOOLS: Tool[] = [
-  ...STATIC_TOOLS_FROM_FILE,
-];
 
 
 export interface Notification {
@@ -358,7 +354,7 @@ export const incrementViews = () => {
 
 export const incrementClicks = (toolId: string) => {
   initializeAppOnce();
-  if (!db) return;
+  if (!db || !toolId) return;
   incrementCounter('stats/tool_clicks');
   incrementCounter(`tool_stats/${toolId}/clicks`);
 };
@@ -415,7 +411,7 @@ export const getStats = (subscribe: boolean = true, callback?: (stats: { views: 
 
 export const getToolStats = async (toolId: string, subscribe: boolean = true, callback?: (stats: { clicks: number }) => void) => {
   initializeAppOnce();
-  if (!db) {
+  if (!db || !toolId) {
     if (callback) callback({ clicks: 0 });
     return subscribe ? () => {} : { clicks: 0 };
   }
@@ -669,7 +665,7 @@ export const getTools = async (): Promise<Tool[]> => {
   initializeAppOnce();
   if (!db) {
     console.log("Firebase not configured. Falling back to static tools.");
-    return Promise.resolve(STATIC_TOOLS_FROM_FILE.sort((a, b) => a.order - b.order));
+    return Promise.resolve(ALL_TOOLS.sort((a, b) => a.order - b.order));
   }
 
   const toolsRef = ref(db, 'tools');
@@ -684,16 +680,16 @@ export const getTools = async (): Promise<Tool[]> => {
       console.log("No tools found in Firebase, populating with static tools.");
       
       const updates: { [key: string]: any } = {};
-      STATIC_TOOLS_FROM_FILE.forEach(tool => {
+      ALL_TOOLS.forEach(tool => {
           updates[`/tools/${tool.id}`] = tool;
       });
 
       await update(ref(db), updates);
-      return STATIC_TOOLS_FROM_FILE.sort((a, b) => a.order - b.order);
+      return ALL_TOOLS.sort((a, b) => a.order - b.order);
     }
   } catch (error) {
     console.error("Error fetching tools, falling back to static:", error);
-    return STATIC_TOOLS_FROM_FILE.sort((a, b) => a.order - b.order);
+    return ALL_TOOLS.sort((a, b) => a.order - b.order);
   }
 };
 
